@@ -1,0 +1,38 @@
+⁠⁠var express = require('express');
+
+var app = express();
+
+var port = 3000;
+
+var bodyParser = require('body-parser');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+
+
+var MongoClient = require('mongodb').MongoClient;          
+
+app.post('/api/getAlarms', function (req, res) {
+    var dbname = req.body.mongodb;
+    var collName = req.body.mongocoll + "_alarmlog";
+    var activepage = req.body.page;
+    var pagesize = 10;
+    console.log('getAlarms', "active page" + activepage);
+    MongoClient.connect("mongodb:46.101.189.235:38329", function (err, db) {
+        if (!err) {
+            db = db.db(dbname);
+            var collection = db.collection(collName);
+            collection.find().skip(pagesize * (activepage - 1)).sort({alarmdetectutc: -1}).limit(pagesize).toArray(function (err, items) {
+
+                console.log('icerden');
+                if (err) {
+                    console.log(err);
+                }
+
+                console.log(items);
+                // process.exit();
+                res.send(items);
+            });
+
+        }
+    });
+});
